@@ -1,0 +1,31 @@
+import pandas as pd
+from openpyxl import Workbook
+
+# Excelファイルの読み込み
+filename = 'HA.xlsx'
+df = pd.read_excel(filename, sheet_name=None) # sheet_name=Noneで全てのシートを読み込む
+
+# Massの数字を入力
+mass_list = input("Massの数字をカンマ区切りで入力してください: ").split(",")
+
+# 各Massに対応するIntensityの総和を計算
+total_intensity = {}# totalのintensityを収納するリストを作成
+for mass in mass_list:　#massが変数、mass_listは任意に入力した数字列、つまりmass_listに該当するmassを探す
+    mass = mass.strip() # 不要な空白を削除
+    intensity_list = []
+    for sheet_name in df.keys():　#項のみをリストアップする
+        sheet = df[sheet_name]
+        intensity = sheet[sheet['Mass'].astype(str).str.split('.').str[0] == mass]['Intensity'].sum()
+        intensity_list.append(intensity)
+    total_intensity[mass] = intensity_list
+
+# 結果を1枚のシートにまとめる
+wb = Workbook()
+ws = wb.active
+ws.title = "Total Intensity"
+ws.append(["Mass"] + list(df.keys())) # 1行目にMassと各シート名を出力
+for mass, intensity_list in total_intensity.items():
+    ws.append([mass] + intensity_list)
+
+# 結果を新しいExcelファイルとして保存
+wb.save('result1.xlsx')
